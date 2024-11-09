@@ -1,11 +1,8 @@
-beautifulsoup4==4.12.3
 folium==0.18.0
 openai==1.54.3
 pandas==2.0.3
-pandas==1.5.3
 pydantic==2.9.2
 python-dotenv==1.0.1
 Requests==2.32.3
-selenium==4.26.1
 streamlit==1.40.0
 streamlit_folium==0.23.1
