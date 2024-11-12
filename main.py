@@ -24,22 +24,23 @@ if not st.session_state["authenticated"]:
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    if st.button("Login"):
+    if st.button("Login", key="login_button"):
         login(username, password)
 
 # Main app content for authenticated users
 if st.session_state["authenticated"]:
-    st.sidebar.button("Logout", on_click=logout)
+    st.sidebar.button("Logout", on_click=logout, key="logout_button")
 
     # Sidebar filter reset functionality
     if "reset_filters" not in st.session_state:
         st.session_state["reset_filters"] = False
 
-    if st.sidebar.button("Reset Filters"):
+    # Add a unique key to the Reset Filters button
+    if st.sidebar.button("Reset Filters", key="reset_button"):
         st.session_state.reset_filters = True
     else:
         st.session_state.reset_filters = False
-        
+      
     # Caching data load for performance
     @st.cache_data
     def load_data():
