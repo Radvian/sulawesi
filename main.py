@@ -167,7 +167,7 @@ if st.session_state["authenticated"]:
     # Toggleable DataFrame Section
     if st.checkbox("Show DataFrame"):
         st.write("### Filtered Data")
-        st.dataframe(filtered_data[["Place Name", "Location", "Kota/Kabupaten", "Provinsi", "Phone Number", "URL", "Commodity"]])
+        st.dataframe(filtered_data[["Place Name", "Kota/Kabupaten", "Provinsi", "URL", "Location", "Phone Number", "Commodity"]], column_config={"URL":st.column_config.LinkColumn("Google Maps Link")})
     
     # Download Button for Full Data
     st.download_button(
