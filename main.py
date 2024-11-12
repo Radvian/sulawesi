@@ -31,7 +31,7 @@ if not st.session_state["authenticated"]:
 if st.session_state["authenticated"]:
     st.sidebar.button("Logout", on_click=logout, key="logout_button")
 
-    # Sidebar filter reset functionality
+    # Sidebar filter reset functionality - Place the Reset Filters button in the sidebar only
     if "reset_filters" not in st.session_state:
         st.session_state["reset_filters"] = False
 
@@ -40,7 +40,7 @@ if st.session_state["authenticated"]:
         st.session_state.reset_filters = True
     else:
         st.session_state.reset_filters = False
-      
+
     # Caching data load for performance
     @st.cache_data
     def load_data():
