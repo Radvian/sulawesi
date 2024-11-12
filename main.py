@@ -125,7 +125,7 @@ if st.session_state["authenticated"]:
     filtered_data = filtered_data.dropna(subset=["Latitude", "Longitude"])
     
     # Legend/Information Section
-    st.write("### Legend / Information")
+    st.write("### Informasi")
     commodity_colors = {
         'cengkeh': '#FF0000',      # Red
         'kakao': '#0000FF',        # Blue
