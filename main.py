@@ -46,7 +46,8 @@ if st.session_state["authenticated"]:
         data = pd.read_csv('sulawesi_sda_data_nov2024.csv')
         data["Panen Months"] = data["Panen Months "].apply(lambda x: eval(x) if isinstance(x, str) else [])
         return data
-    
+
+    st.title("Peta Sebaran SDA di Pulau Sulawesi")
     # Load the data
     data = load_data()
     
