@@ -3,8 +3,20 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-# Initialize session state for login status
+# Initialize session state for login status and other interactive states
 if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+# Function to handle login
+def login(username, password):
+    if username == st.secrets["USERNAME"] and password == st.secrets["PASSWORD"]:
+        st.session_state["authenticated"] = True
+        st.success("Login successful!")
+    else:
+        st.error("Incorrect username or password.")
+
+# Function to handle logout
+def logout():
     st.session_state["authenticated"] = False
 
 # Login form if not authenticated
@@ -13,76 +25,199 @@ if not st.session_state["authenticated"]:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        if username == st.secrets["USERNAME"] and password == st.secrets["PASSWORD"]:
-            st.session_state["authenticated"] = True
-            st.success("Login successful!")
-        else:
-            st.error("Incorrect username or password.")
+        login(username, password)
 
 # Main app content for authenticated users
 if st.session_state["authenticated"]:
-    if st.button("Logout"):
-        st.session_state["authenticated"] = False
+    st.sidebar.button("Logout", on_click=logout)
+
+    # Sidebar filter reset functionality
+    if "reset_filters" not in st.session_state:
+        st.session_state["reset_filters"] = False
+
+    if st.sidebar.button("Reset Filters"):
+        st.session_state.reset_filters = True
+    else:
+        st.session_state.reset_filters = False
         
+    # Caching data load for performance
+    @st.cache_data
+    def load_data():
+        data = pd.read_csv('scraped_data.csv')
+        data["Panen Months"] = data["Panen Months "].apply(lambda x: eval(x) if isinstance(x, str) else [])
+        return data
+    
     # Load the data
-    data = pd.read_csv('scraped_data.csv')
+    data = load_data()
+    
+    # Define months for display
+    months = {
+        1: "January", 2: "February", 3: "March", 4: "April", 5: "May",
+        6: "June", 7: "July", 8: "August", 9: "September",
+        10: "October", 11: "November", 12: "December"
+    }
     
     # Sidebar filters
     st.sidebar.header("Filter Options")
-    kecamatan_filter = st.sidebar.multiselect("Select Kecamatan", options=data["Kecamatan"].unique())
-    kota_filter = st.sidebar.multiselect("Select Kota", options=data["Kota"].unique())
-    kabupaten_filter = st.sidebar.multiselect("Select Kabupaten", options=data["Kabupaten"].unique())
-    provinsi_filter = st.sidebar.multiselect("Select Provinsi", options=data["Provinsi"].unique())
-    type_filter = st.sidebar.multiselect("Select Type", options=data["Type"].unique())
     
-    # Apply filters to data
-    filtered_data = data
-    if kecamatan_filter:
-        filtered_data = filtered_data[filtered_data["Kecamatan"].isin(kecamatan_filter)]
-    if kota_filter:
-        filtered_data = filtered_data[filtered_data["Kota"].isin(kota_filter)]
-    if kabupaten_filter:
-        filtered_data = filtered_data[filtered_data["Kabupaten"].isin(kabupaten_filter)]
-    if provinsi_filter:
-        filtered_data = filtered_data[filtered_data["Provinsi"].isin(provinsi_filter)]
-    if type_filter:
-        filtered_data = filtered_data[filtered_data["Type"].isin(type_filter)]
+    # Set up session state for filter values to enable reset functionality
+    if 'reset' not in st.session_state:
+        st.session_state.reset = False
     
-    # Display filtered data in a table
-    st.write("### Peta Kebun/Lokasi Sumber Daya Alam di Sulawesi")
-    st.dataframe(filtered_data)
+    if st.sidebar.button("Reset Filters"):
+        st.session_state.reset = True
+    else:
+        st.session_state.reset = False
     
-    # Initialize Folium map
-    m = folium.Map(
-        location=[filtered_data["Latitude"].median(), filtered_data["Longitude"].median()],
-        zoom_start=6,
-        control_scale=True
+    # Set default filter selections
+    default_months = list(months.keys())
+    default_commodities = data["Commodity"].unique()
+    default_provinces = data["Provinsi"].unique()
+    default_kota_kabupaten = []
+    
+    # Use session state to handle reset functionality
+    selected_months = st.sidebar.multiselect(
+        "Select Bulan Panen",
+        options=list(months.keys()),
+        format_func=lambda x: months[x],
+        default=default_months if st.session_state.reset else None,
+        key="bulan_panen"
     )
     
-    # Define colors for each unique type
-    type_colors = {
-        'cengkeh':'red', 
-        'kakao':'blue', 
-        'kebun pala':'green',
-        'kebun sawit':'lightgreen', 
-        'kelapa':'gold', 
-        'kopi':'brown', 
-        'nikel':'grey'
-        # Add more types and their colors as needed
+    # Filter commodities based on selected months
+    filtered_data = data
+    if selected_months:
+        filtered_data = data[data["Panen Months"].apply(lambda x: any(month in x for month in selected_months))]
+    commodity_options = filtered_data["Commodity"].unique()
+    
+    selected_commodity = st.sidebar.multiselect(
+        "Select Commodity",
+        options=commodity_options,
+        default=commodity_options if st.session_state.reset else None,
+        key="commodity"
+    )
+    
+    # Apply commodity filter to the data
+    if selected_commodity:
+        filtered_data = filtered_data[filtered_data["Commodity"].isin(selected_commodity)]
+    
+    # Filter province options based on selected commodities
+    province_options = filtered_data["Provinsi"].unique()
+    selected_province = st.sidebar.multiselect(
+        "Select Province",
+        options=province_options,
+        default=province_options if st.session_state.reset else None,
+        key="province"
+    )
+    
+    # Apply province filter to the data
+    if selected_province:
+        filtered_data = filtered_data[filtered_data["Provinsi"].isin(selected_province)]
+    
+    # Filter Kota/Kabupaten options based on both selected commodity and province
+    kota_kabupaten_options = filtered_data["Kota/Kabupaten"].unique()
+    
+    selected_kota_kabupaten = st.sidebar.multiselect(
+        "Select Kota/Kabupaten",
+        options=kota_kabupaten_options,
+        default=default_kota_kabupaten if st.session_state.reset else [],
+        help="Select regions as per the chosen commodity and province.",
+        key="kota_kabupaten"
+    )
+    
+    # Apply Kota/Kabupaten filter to the data
+    if selected_kota_kabupaten:
+        filtered_data = filtered_data[filtered_data["Kota/Kabupaten"].isin(selected_kota_kabupaten)]
+    
+    # Check if filtered data has valid Latitude and Longitude values to avoid NaN issues
+    filtered_data = filtered_data.dropna(subset=["Latitude", "Longitude"])
+    
+    # Legend/Information Section
+    st.write("### Legend / Information")
+    commodity_colors = {
+        'cengkeh': '#FF0000',      # Red
+        'kakao': '#0000FF',        # Blue
+        'kebun pala': '#008000',   # Green
+        'kelapa sawit': '#00FF00', # Light green
+        'kelapa': '#FFD700',       # Gold
+        'kopi': '#8B4513',         # Saddle brown
+        'nikel': '#A9A9A9'         # Dark gray
     }
     
-    # Add points to the map
-    for _, row in filtered_data.iterrows():
-        folium.CircleMarker(
-            location=[row["Latitude"], row["Longitude"]],
-            radius=10,
-            color=type_colors.get(row["Type"], 'gray'),
-            fill=True,
-            fill_color=type_colors.get(row["Type"], 'gray'),
-            fill_opacity=0.7,
-            popup=f"{row['Title']}, {row['Place Name']}",
-        ).add_to(m)
+    # Create two columns for the legend display
+    col1, col2 = st.columns(2)
+    legend_items = list(commodity_colors.keys())
     
-    # Display map in Streamlit
-    st.write("### Location Map")
-    st_folium(m, width=700)
+    # Distribute items in two columns
+    for idx, commodity in enumerate(legend_items):
+        color = commodity_colors[commodity]
+        commodity_data = data[data["Commodity"] == commodity]
+        
+        if not commodity_data.empty:
+            num_locations = len(commodity_data)
+            
+            # Highlight provinces and harvest months
+            provinces = ", ".join(
+                [f"<span style='background-color: lightblue;'>{province}</span>" for province in commodity_data["Provinsi"].unique()]
+            )
+            
+            panen_months = ", ".join(
+                [f"<span style='background-color: lightgreen;'>{months[m]}</span>" for m in sorted(set(sum(commodity_data["Panen Months"], [])))]
+            )
+            
+            # Display in two columns by alternating between col1 and col2
+            col = col1 if idx % 2 == 0 else col2
+            col.markdown(
+                f"<span style='color:{color}'>●</span> **{commodity.capitalize()}**: "
+                f"{num_locations} locations in {provinces}. Harvest months: {panen_months}",
+                unsafe_allow_html=True
+            )
+    
+    # Toggleable DataFrame Section
+    if st.checkbox("Show DataFrame"):
+        st.write("### Filtered Data")
+        st.dataframe(filtered_data[["Place Name", "Location", "Kota/Kabupaten", "Provinsi", "Phone Number", "URL", "Commodity"]])
+    
+    # Download Button for Full Data
+    st.download_button(
+        label="Download Full Data",
+        data=data.to_csv(index=False),
+        file_name="full_data.csv",
+        mime="text/csv"
+    )
+    
+    # Display map
+    if not filtered_data.empty:
+        m = folium.Map(
+            location=[filtered_data["Latitude"].median(), filtered_data["Longitude"].median()],
+            zoom_start=6,
+            control_scale=True
+        )
+    
+        for _, row in filtered_data.iterrows():
+            # Use the color from the commodity_colors dictionary
+            color = commodity_colors.get(row["Commodity"], 'black')
+            
+            # Create a clickable URL link if URL is present
+            url_link = f"<a href='{row['URL']}' target='_blank'>Click here for more info</a>" if pd.notnull(row['URL']) else "No URL available"
+            
+            # Create the popup content
+            popup_content = f"{row['Title']}, {row['Place Name']}<br>{url_link}"
+    
+            # Add CircleMarker with clickable URL in popup
+            folium.CircleMarker(
+                location=[row["Latitude"], row["Longitude"]],
+                radius=10,
+                color=color,
+                fill=True,
+                fill_color=color,
+                fill_opacity=0.7,
+                popup=folium.Popup(popup_content, max_width=300),
+            ).add_to(m)
+    
+        st.write("### Location Map")
+        st_folium(m, width=700)
+    else:
+        st.markdown("**No location available. Please change your filters.**")
+        empty_map = folium.Map(location=[-2.5489, 118.0149], zoom_start=6, control_scale=True)
+        st_folium(empty_map, width=700)
