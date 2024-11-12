@@ -53,13 +53,13 @@ if st.session_state["authenticated"]:
     
     # Define months for display
     months = {
-        1: "January", 2: "February", 3: "March", 4: "April", 5: "May",
-        6: "June", 7: "July", 8: "August", 9: "September",
-        10: "October", 11: "November", 12: "December"
+        1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei",
+        6: "Juni", 7: "Juli", 8: "Agustus", 9: "September",
+        10: "Oktober", 11: "November", 12: "Desember"
     }
     
     # Sidebar filters
-    st.sidebar.header("Filter Options")
+    st.sidebar.header("Opsi Filter")
     
     # Set default filter selections
     default_months = list(months.keys())
@@ -69,7 +69,7 @@ if st.session_state["authenticated"]:
     
     # Use session state to handle reset functionality
     selected_months = st.sidebar.multiselect(
-        "Select Bulan Panen",
+        "Pilih Bulan Panen",
         options=list(months.keys()),
         format_func=lambda x: months[x],
         default=default_months if st.session_state.reset_filters else None,
@@ -83,7 +83,7 @@ if st.session_state["authenticated"]:
     commodity_options = filtered_data["Commodity"].unique()
     
     selected_commodity = st.sidebar.multiselect(
-        "Select Commodity",
+        "Pilih Komoditas",
         options=commodity_options,
         default=commodity_options if st.session_state.reset_filters else None,
         key="commodity"
@@ -96,7 +96,7 @@ if st.session_state["authenticated"]:
     # Filter province options based on selected commodities
     province_options = filtered_data["Provinsi"].unique()
     selected_province = st.sidebar.multiselect(
-        "Select Province",
+        "Pilih Provinsi",
         options=province_options,
         default=province_options if st.session_state.reset_filters else None,
         key="province"
@@ -110,7 +110,7 @@ if st.session_state["authenticated"]:
     kota_kabupaten_options = filtered_data["Kota/Kabupaten"].unique()
     
     selected_kota_kabupaten = st.sidebar.multiselect(
-        "Select Kota/Kabupaten",
+        "Pilih Kota/Kabupaten",
         options=kota_kabupaten_options,
         default=default_kota_kabupaten if st.session_state.reset_filters else [],
         help="Select regions as per the chosen commodity and province.",
@@ -161,18 +161,18 @@ if st.session_state["authenticated"]:
             col = col1 if idx % 2 == 0 else col2
             col.markdown(
                 f"<span style='color:{color}'>●</span> **{commodity.capitalize()}**: "
-                f"{num_locations} locations in {provinces}. Harvest months: {panen_months}",
+                f"{num_locations} lokasi di provinsi: {provinces}. Bulan Panen: {panen_months}",
                 unsafe_allow_html=True
             )
     
     # Toggleable DataFrame Section
-    if st.checkbox("Show DataFrame"):
-        st.write("### Filtered Data")
-        st.dataframe(filtered_data[["Place Name", "Kota/Kabupaten", "Provinsi", "URL", "Location", "Phone Number", "Commodity"]], column_config={"URL":st.column_config.LinkColumn("Google Maps Link")})
+    if st.checkbox("Tampilkan Tabel"):
+        st.write("### Tabel")
+        st.dataframe(filtered_data[["Place Name", "Kota/Kabupaten", "Provinsi", "URL", "Location", "Phone Number", "Commodity"]], column_config={"Place Name":"Nama Tempat", "Location":"Lokasi", "Phone Number":"Nomor Telepon", "Commodity":"Komoditas", "URL":st.column_config.LinkColumn("Google Maps Link")})
     
     # Download Button for Full Data
     st.download_button(
-        label="Download Full Data",
+        label="Download Seluruh Data",
         data=data.to_csv(index=False),
         file_name="full_data.csv",
         mime="text/csv"
@@ -210,6 +210,6 @@ if st.session_state["authenticated"]:
         st.write("### Location Map")
         st_folium(m, width=700)
     else:
-        st.markdown("**No location available. Please change your filters.**")
+        st.markdown("**Tidak ada lokasi yang tersedia, mohon reset atau ubah filter yang dipilih.**")
         empty_map = folium.Map(location=[-2.5489, 118.0149], zoom_start=6, control_scale=True)
         st_folium(empty_map, width=700)
