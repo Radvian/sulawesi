@@ -207,7 +207,7 @@ if st.session_state["authenticated"]:
                 popup=folium.Popup(popup_content, max_width=300),
             ).add_to(m)
     
-        st.write("### Location Map")
+        st.write("### Peta")
         st_folium(m, width=700)
     else:
         st.markdown("**Tidak ada lokasi yang tersedia, mohon reset atau ubah filter yang dipilih.**")
