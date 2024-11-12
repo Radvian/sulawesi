@@ -43,7 +43,7 @@ if st.session_state["authenticated"]:
     # Caching data load for performance
     @st.cache_data
     def load_data():
-        data = pd.read_csv('scraped_data.csv')
+        data = pd.read_csv('sulawesi_sda_data_nov2024.csv')
         data["Panen Months"] = data["Panen Months "].apply(lambda x: eval(x) if isinstance(x, str) else [])
         return data
     
