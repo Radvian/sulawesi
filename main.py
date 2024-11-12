@@ -31,11 +31,10 @@ if not st.session_state["authenticated"]:
 if st.session_state["authenticated"]:
     st.sidebar.button("Logout", on_click=logout, key="logout_button")
 
-    # Sidebar filter reset functionality - Place the Reset Filters button in the sidebar only
+    # Sidebar filter reset functionality - Single Reset Filters button
     if "reset_filters" not in st.session_state:
         st.session_state["reset_filters"] = False
 
-    # Add a unique key to the Reset Filters button
     if st.sidebar.button("Reset Filters", key="reset_button"):
         st.session_state.reset_filters = True
     else:
@@ -61,15 +60,6 @@ if st.session_state["authenticated"]:
     # Sidebar filters
     st.sidebar.header("Filter Options")
     
-    # Set up session state for filter values to enable reset functionality
-    if 'reset' not in st.session_state:
-        st.session_state.reset = False
-    
-    if st.sidebar.button("Reset Filters"):
-        st.session_state.reset = True
-    else:
-        st.session_state.reset = False
-    
     # Set default filter selections
     default_months = list(months.keys())
     default_commodities = data["Commodity"].unique()
@@ -81,7 +71,7 @@ if st.session_state["authenticated"]:
         "Select Bulan Panen",
         options=list(months.keys()),
         format_func=lambda x: months[x],
-        default=default_months if st.session_state.reset else None,
+        default=default_months if st.session_state.reset_filters else None,
         key="bulan_panen"
     )
     
@@ -94,7 +84,7 @@ if st.session_state["authenticated"]:
     selected_commodity = st.sidebar.multiselect(
         "Select Commodity",
         options=commodity_options,
-        default=commodity_options if st.session_state.reset else None,
+        default=commodity_options if st.session_state.reset_filters else None,
         key="commodity"
     )
     
@@ -107,7 +97,7 @@ if st.session_state["authenticated"]:
     selected_province = st.sidebar.multiselect(
         "Select Province",
         options=province_options,
-        default=province_options if st.session_state.reset else None,
+        default=province_options if st.session_state.reset_filters else None,
         key="province"
     )
     
@@ -121,7 +111,7 @@ if st.session_state["authenticated"]:
     selected_kota_kabupaten = st.sidebar.multiselect(
         "Select Kota/Kabupaten",
         options=kota_kabupaten_options,
-        default=default_kota_kabupaten if st.session_state.reset else [],
+        default=default_kota_kabupaten if st.session_state.reset_filters else [],
         help="Select regions as per the chosen commodity and province.",
         key="kota_kabupaten"
     )
