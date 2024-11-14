@@ -130,5 +130,4 @@ def search_and_save(search_string:str, commodity:str, bulan_panen:list):
         return df
 
     except Exception as e:
-        print(s)
-        raise
+        st.markdown(f"Failure in extracting data. Please try again later. Apologies for the malfunction, please kindly contact Grady Oktavian (grady.oktavian@lippokarawaci.co.id) and forward this error message: {str(e)}")
