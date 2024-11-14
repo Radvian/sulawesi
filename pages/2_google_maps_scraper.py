@@ -107,7 +107,7 @@ if search_keywords:
             df_new_commodity = search_and_save(search_string=search_keywords,
                                             commodity=commodity_to_search,
                                             bulan_panen=selected_months)
-            if df_new_commodity == None:
+            if df_new_commodity is None:
                 st.success("Pencarian tidak berhasil memperoleh data baru. Silakan ganti atau coba keywords lain")
             else:
                 st.toast("Melakukan update data ke Google Sheets...Mohon jangan menutup tab ini...")
