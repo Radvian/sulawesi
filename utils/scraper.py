@@ -104,30 +104,33 @@ def search_and_save(search_string:str, commodity:str, bulan_panen:list):
     try:
         st.toast("Sedang mencari di Google Maps...", icon='🚀')
         search_result = search_places(search_string)
-        st.success("Berhasil memperoleh data dari Google Maps! Sedang membersihkan data...")
-
-        st.toast("Membersihkan data yang diperoleh...", icon='🚀')
-        for s in search_result: 
-            try:
-                parsed_addr = parse_address(s["address"])
-                s["dusun"] = parsed_addr.dusun
-                s["kecamatan"] = parsed_addr.kecamatan
-                s["kota_kabupaten"] = parsed_addr.kota_kabupaten
-                s["provinsi"] = parsed_addr.provinsi
-                s["kode_pos"] = parsed_addr.kode_pos
-                s["komoditas"] = commodity
-                s["bulan_panen"] = bulan_panen
-            except:
-                search_result.remove(s)
-                pass
-
-        data = search_result
-        transposed_data = {key: [d[key] for d in data] for key in data[0]}
-        df = pd.DataFrame(transposed_data)
-        df.columns = ['ID', 'Place Name', 'Latitude', 'Longitude', 'Address', 'Phone Number', 'URL', 'Dusun', 'Kecamatan', 'Kota/Kabupaten', 'Provinsi', 'Kode Pos', 'Komoditas', 'Bulan Panen']
-        df['Phone Number'] = df['Phone Number'].apply(lambda x: f" {x}" if pd.notnull(x) and x != "" else "")
-        st.success("Berhasil membersihkan data dari Google Maps! Melakukan update data ke Google Sheets...")
-        return df
+        if len(search_result) == 0:
+            st.success("Google Search yields 0 results.")
+            return None
+        else:
+            st.success("Berhasil memperoleh data dari Google Maps! Sedang membersihkan data...")
+            st.toast("Membersihkan data yang diperoleh...", icon='🚀')
+            for s in search_result: 
+                try:
+                    parsed_addr = parse_address(s["address"])
+                    s["dusun"] = parsed_addr.dusun
+                    s["kecamatan"] = parsed_addr.kecamatan
+                    s["kota_kabupaten"] = parsed_addr.kota_kabupaten
+                    s["provinsi"] = parsed_addr.provinsi
+                    s["kode_pos"] = parsed_addr.kode_pos
+                    s["komoditas"] = commodity
+                    s["bulan_panen"] = bulan_panen
+                except:
+                    search_result.remove(s)
+                    pass
+    
+            data = search_result
+            transposed_data = {key: [d[key] for d in data] for key in data[0]}
+            df = pd.DataFrame(transposed_data)
+            df.columns = ['ID', 'Place Name', 'Latitude', 'Longitude', 'Address', 'Phone Number', 'URL', 'Dusun', 'Kecamatan', 'Kota/Kabupaten', 'Provinsi', 'Kode Pos', 'Komoditas', 'Bulan Panen']
+            df['Phone Number'] = df['Phone Number'].apply(lambda x: f" {x}" if pd.notnull(x) and x != "" else "")
+            st.success("Berhasil membersihkan data dari Google Maps! Melakukan update data ke Google Sheets...")
+            return df
 
     except Exception as e:
         st.markdown(f"Failure in extracting data. Please try again later. Apologies for the malfunction, please kindly contact Grady Oktavian (grady.oktavian@lippokarawaci.co.id) and forward this error message: {str(e)}")
