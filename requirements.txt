@@ -1,8 +1,0 @@
-folium==0.18.0
-openai==1.54.3
-pandas
-pydantic
-python-dotenv==1.0.1
-Requests
-streamlit==1.40.0
-streamlit_folium==0.23.1
