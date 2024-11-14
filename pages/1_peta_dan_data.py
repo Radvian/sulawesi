@@ -9,12 +9,18 @@ from streamlit_folium import st_folium
 from streamlit_gsheets import GSheetsConnection
 
 # Caching data load for performance
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=60)
 def load_data():
     conn = st.connection("gsheets", type=GSheetsConnection)
     df = conn.read(worksheet="data")
     df["Bulan Panen"] = df["Bulan Panen"].apply(lambda x: eval(x) if isinstance(x, str) else [])
     return df
+
+def load_color_config():
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    color_df = conn.read(worksheet="colors")
+    color_config = color_df.set_index("Commodity")["Color"].to_dict()
+    return color_config
 
 # Define months for display
 months = {
@@ -124,10 +130,8 @@ selected_kota_kabupaten = st.sidebar.multiselect(
 
 # Legend/Information Section
 st.write("### Informasi")
-colors_config_path = os.path.join("config", "colors.json")
-with open(colors_config_path, 'r') as f:
-    Komoditas_colors = json.load(f)
-    assert type(Komoditas_colors) == dict
+color_config = load_color_config()
+Komoditas_colors = color_config
 
 # Display legend in two columns
 col1, col2 = st.columns(2)
