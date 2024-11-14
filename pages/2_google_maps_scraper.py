@@ -87,22 +87,21 @@ else:
 if search_keywords:
     st.write("##### Pencarian akan dilakukan dengan konfigurasi seperti di atas. Silakan tekan tombol di bawah ini jika sudah yakin.")
     if st.button("Cari di Google Maps!"):
-        commodity_colors[new_commodity] = new_color
-        new_color_df = pd.DataFrame.form_dict(commodity_colors, orient='index', columns=["Color"])
-        new_color_df = new_color_df.reset_index().rename(columns={"index":"Commodity"})
-        conn = st.connection("gsheets",type=GSheetsConnection)
-        try:
-            conn.update(worksheet='colors', data=new_color_df)
-        except:
-            conn.create(worksheet='colors', data=new_color_df)
-        
-        st.cache_data.clear()
-        commodity_colors = load_colors_config()
-
         if selected_commodity_option != 'Tambah komoditas baru...':
             commodity_to_search = selected_commodity_option
         else:
             commodity_to_search = new_commodity
+            commodity_colors[new_commodity] = new_color
+            new_color_df = pd.DataFrame.form_dict(commodity_colors, orient='index', columns=["Color"])
+            new_color_df = new_color_df.reset_index().rename(columns={"index":"Commodity"})
+            conn = st.connection("gsheets",type=GSheetsConnection)
+            try:
+                conn.update(worksheet='colors', data=new_color_df)
+            except:
+                conn.create(worksheet='colors', data=new_color_df)
+        
+        st.cache_data.clear()
+        commodity_colors = load_colors_config()
 
         with st.spinner("AI sedang mencari data...Estimasi waktu 3 menit...Mohon jangan me-refresh atau menutup tab ini..."):
             df_new_commodity = search_and_save(search_string=search_keywords,
