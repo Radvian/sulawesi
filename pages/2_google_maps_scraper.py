@@ -19,12 +19,11 @@ def load_data():
 
 colors_config_path = os.path.join("config", "colors.json")
 # Loading colors configuration
-def load_colors_config(colors_config_path=colors_config_path):
-    with open(colors_config_path, 'r') as f:
-        commodity_colors = json.load(f)
-        assert type(commodity_colors) == dict
-
-    return commodity_colors
+def load_colors_config():
+    conn = st.connection("gsheets",type=GSheetsConnection)
+    color_df = conn.read(worksheet='colors')
+    color_config = color_df.set_index("Commodity")["Color"].to_dict()
+    return color_config
 
 # Function to create HTML for colored circle
 def color_circle(color):
@@ -64,7 +63,6 @@ selected_commodity_option = st.selectbox(
 if selected_commodity_option == "Tambah komoditas baru...":
     new_commodity = st.text_input("Tulis nama komoditas baru...")
     new_color = st.color_picker("Pilih warna baru untuk komoditas baru...")
-    commodity_colors[new_commodity] = new_color
 
     months_range = range(1,13)
     selected_months = st.multiselect(
@@ -89,8 +87,17 @@ else:
 if search_keywords:
     st.write("##### Pencarian akan dilakukan dengan konfigurasi seperti di atas. Silakan tekan tombol di bawah ini jika sudah yakin.")
     if st.button("Cari di Google Maps!"):
-        with open(colors_config_path, 'w') as f:
-            json.dump(commodity_colors, f, indent=4)
+        commodity_colors[new_commodity] = new_color
+        new_color_df = pd.DataFrame.form_dict(commodity_colors, orient='index', columns=["Color"])
+        new_color_df = new_color_df.reset_index().rename(columns={"index":"Commodity"})
+        conn = st.connection("gsheets",type=GSheetsConnection)
+        try:
+            conn.update(worksheet='colors', data=new_color_df)
+        except:
+            conn.create(worksheet='colors', data=new_color_df)
+        
+        st.cache_data.clear()
+        commodity_colors = load_colors_config()
 
         if selected_commodity_option != 'Tambah komoditas baru...':
             commodity_to_search = selected_commodity_option
