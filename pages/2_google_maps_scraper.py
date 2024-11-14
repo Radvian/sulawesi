@@ -92,7 +92,7 @@ if search_keywords:
         else:
             commodity_to_search = new_commodity
             commodity_colors[new_commodity] = new_color
-            new_color_df = pd.DataFrame.form_dict(commodity_colors, orient='index', columns=["Color"])
+            new_color_df = pd.DataFrame.from_dict(commodity_colors, orient='index', columns=["Color"])
             new_color_df = new_color_df.reset_index().rename(columns={"index":"Commodity"})
             conn = st.connection("gsheets",type=GSheetsConnection)
             try:
