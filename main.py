@@ -47,7 +47,7 @@ def main():
             #### 1. Halaman "Peta dan Data" memiliki peta yang dapat difilter untuk menunjukan pesebaran sumber daya alam (SDA) di Sulawesi, beserta dengan link ke Google Maps.
             #### 2. Halaman "Google Maps Scraper" memampukan kita untuk melakukan web-scraping (ekstraksi data dari internet) yang dibantu oleh AI supaya mempermudah kita dalam pengumpulan data.
             
-            #### Data dalam bentuk Google Spreadsheet terdapat di [link ini](https://docs.google.com/spreadsheets/d/1vdggN37wqyG5hVywLaa21Xw-EFOMEvTJ9KhCG_wKRZY/edit?gid=1381996917#gid=1381996917)"""
+            #### Data dalam bentuk Google Spreadsheet terdapat di [link ini](https://docs.google.com/spreadsheets/d/1vdggN37wqyG5hVywLaa21Xw-EFOMEvTJ9KhCG_wKRZY/edit?gid=1381996917#gid=1381996917)""")
 
         # Sidebar with logout button
         with st.sidebar:
