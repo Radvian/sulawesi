@@ -35,9 +35,9 @@ def main():
                 st.error("Invalid username or password")
     else:
         # Navigation setup
-        home = st.Page("Home.py", title="Home", default=True)
-        page1 = st.Page("pages/1_Peta_dan_Data.py", title="Peta dan Data")
-        page2 = st.Page("pages/2_Google_Maps_Scraper.py", title="Google Maps Scraper")
+        home = st.Page("main.py", title="Home", default=True)
+        page1 = st.Page("pages/1_peta_dan_data.py", title="Peta dan Data")
+        page2 = st.Page("pages/2_google_maps_scraper.py", title="Google Maps Scraper")
 
         pg = st.navigation([home, page1, page2])
 
