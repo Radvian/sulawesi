@@ -107,23 +107,25 @@ if search_keywords:
             df_new_commodity = search_and_save(search_string=search_keywords,
                                             commodity=commodity_to_search,
                                             bulan_panen=selected_months)
-            st.toast("Melakukan update data ke Google Sheets...Mohon jangan menutup tab ini...")
-            
-            st.cache_data.clear()
-            gsheet_data = load_data()
-            
-            df_update = pd.concat([gsheet_data, df_new_commodity], ignore_index=True)
-            df_update = df_update.drop_duplicates(subset=['ID', 'Latitude', 'Longitude']).reset_index(drop = True)
-
-            conn = st.connection("gsheets", type=GSheetsConnection)
-            try:
-                conn.update(worksheet='data', data=df_update)
-            except:
-                conn.create(worksheet='data', data=df_update)
-
-            st.toast("Berhasil melakukan update data ke Google Sheets!")
-        
-        st.success(f"AI berhasil mencari {df_new_commodity.shape[0]} data baru.")
+            if df_new_commodity.shape[0] == 0:
+                st.success("Pencarian tidak berhasil memperoleh data baru. Silakan ganti atau coba keywords lain")
+            else:
+                st.toast("Melakukan update data ke Google Sheets...Mohon jangan menutup tab ini...")
+                
+                st.cache_data.clear()
+                gsheet_data = load_data()
+                
+                df_update = pd.concat([gsheet_data, df_new_commodity], ignore_index=True)
+                df_update = df_update.drop_duplicates(subset=['ID', 'Latitude', 'Longitude']).reset_index(drop = True)
+    
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                try:
+                    conn.update(worksheet='data', data=df_update)
+                except:
+                    conn.create(worksheet='data', data=df_update)
+    
+                st.toast("Berhasil melakukan update data ke Google Sheets!")
+                st.success(f"AI berhasil mencari {df_new_commodity.shape[0]} data baru.")
 
         st.cache_data.clear()
         gsheet_data = load_data()
